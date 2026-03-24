@@ -148,8 +148,8 @@ function PlotsTab({ plots, projectId, supabase, refresh }: { plots: ProjectPlot[
               {p.area_m2 && <p className="text-xs text-slate-500">{p.area_m2} m²</p>}
             </div>
           </div>
-          <button onClick={() => deletePlot(p.id)} className="text-slate-400 hover:text-red-500">
-            <Trash2 className="h-4 w-4" />
+          <button type="button" onClick={() => deletePlot(p.id)} className="rounded-lg p-2.5 text-slate-400 active:bg-slate-100 hover:text-red-500">
+            <Trash2 className="h-5 w-5" />
           </button>
         </Card>
       ))}
@@ -228,8 +228,8 @@ function ActionsTab({
               <p className="mt-1 text-sm text-slate-800">{a.description}</p>
               {a.contact && <p className="mt-0.5 text-xs text-slate-500">Kontakt: {a.contact}</p>}
             </div>
-            <button onClick={() => deleteAction(a.id)} className="shrink-0 text-slate-400 hover:text-red-500">
-              <Trash2 className="h-4 w-4" />
+            <button type="button" onClick={() => deleteAction(a.id)} className="shrink-0 rounded-lg p-2.5 text-slate-400 active:bg-slate-100 hover:text-red-500">
+              <Trash2 className="h-5 w-5" />
             </button>
           </div>
         </Card>
@@ -462,27 +462,30 @@ function FilesTab({
               </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-1">
+            <div className="flex shrink-0 items-center gap-0">
               <button
+                type="button"
                 onClick={() => openAttachment(a)}
-                className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-blue-600"
+                className="rounded-lg p-2.5 text-slate-500 active:bg-slate-100 hover:bg-slate-100 hover:text-blue-600"
                 title="Zobrazit"
               >
-                <Eye className="h-4 w-4" />
+                <Eye className="h-5 w-5" />
               </button>
               <button
+                type="button"
                 onClick={() => downloadAttachment(a)}
-                className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-blue-600"
+                className="rounded-lg p-2.5 text-slate-500 active:bg-slate-100 hover:bg-slate-100 hover:text-blue-600"
                 title="Stáhnout"
               >
-                <Download className="h-4 w-4" />
+                <Download className="h-5 w-5" />
               </button>
               <button
+                type="button"
                 onClick={() => deleteAttachment(a)}
-                className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-red-500"
+                className="rounded-lg p-2.5 text-slate-500 active:bg-slate-100 hover:bg-slate-100 hover:text-red-500"
                 title="Smazat"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-5 w-5" />
               </button>
             </div>
           </Card>
