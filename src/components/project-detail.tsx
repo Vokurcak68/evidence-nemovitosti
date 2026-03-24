@@ -55,18 +55,19 @@ export function ProjectDetail({ project, plots, actions, attachments, users, use
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
+      <div className="flex gap-0.5 rounded-xl bg-slate-100 p-1">
         {tabs.map((t) => (
           <button
             key={t.key}
+            type="button"
             onClick={() => setTab(t.key)}
-            className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            className={`flex-1 rounded-lg px-2 py-2 text-xs sm:text-sm font-medium transition-colors ${
               tab === t.key ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
             }`}
           >
             {t.label}
             {t.count !== undefined && t.count > 0 && (
-              <span className="ml-1 text-xs text-slate-400">({t.count})</span>
+              <span className="ml-0.5 text-[10px] sm:text-xs text-slate-400">({t.count})</span>
             )}
           </button>
         ))}
@@ -402,10 +403,11 @@ function FilesTab({
     const path = resolveStoragePath(att.file_url);
     if (!path) return;
 
+    // Open window immediately (sync with user click) to avoid mobile popup blocker
+    const win = window.open("about:blank", "_blank");
     const signedUrl = await getSignedUrl(path);
-    if (!signedUrl) return;
-
-    window.open(signedUrl, "_blank", "noopener,noreferrer");
+    if (!signedUrl || !win) return;
+    win.location.href = signedUrl;
   }
 
   async function downloadAttachment(att: ProjectAttachment) {
@@ -415,7 +417,14 @@ function FilesTab({
     const signedUrl = await getSignedUrl(path);
     if (!signedUrl) return;
 
-    window.open(signedUrl, "_blank", "noopener,noreferrer");
+    // Use anchor click for download (works on mobile)
+    const a = document.createElement("a");
+    a.href = signedUrl;
+    a.download = att.file_name;
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   async function deleteAttachment(att: ProjectAttachment) {
