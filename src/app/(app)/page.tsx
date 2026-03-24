@@ -22,7 +22,9 @@ export default async function DashboardPage() {
       .limit(10),
   ]);
 
-  const projects = (projectsRes.data ?? []) as Project[];
+  const allProjects = (projectsRes.data ?? []) as Project[];
+  const projects = allProjects.slice(0, 5);
+  const hasMore = allProjects.length > 5;
   const recentActions = (actionsRes.data ?? []) as (ProjectAction & { en_projects: { name: string } | null })[];
 
   return (
@@ -44,7 +46,7 @@ export default async function DashboardPage() {
             <FolderOpen className="h-5 w-5 text-emerald-700" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-slate-900">{projects.length}</p>
+            <p className="text-2xl font-bold text-slate-900">{allProjects.length}</p>
             <p className="text-xs text-slate-500">Projektů</p>
           </div>
         </Card>
@@ -61,7 +63,14 @@ export default async function DashboardPage() {
 
       {/* Recent projects */}
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-slate-800">Projekty</h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-slate-800">Projekty</h2>
+          {hasMore && (
+            <Link href="/projekty" className="text-sm font-medium text-emerald-700 hover:text-emerald-800">
+              Zobrazit všechny →
+            </Link>
+          )}
+        </div>
         {projects.length === 0 ? (
           <Card className="p-6 text-center text-sm text-slate-500">
             Zatím žádné projekty. Vytvořte první!
