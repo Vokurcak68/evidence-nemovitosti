@@ -50,8 +50,8 @@ export default async function ProjectsPage() {
 
           <div className="space-y-2">
             {recent.map((action) => (
-              <Link key={action.id} href={`/projekty/${action.project_id}?tab=actions`}>
-                <Card className="p-3 transition-shadow hover:shadow-md">
+              <Link key={action.id} href={`/projekty/${action.project_id}?tab=actions`} className="block">
+                <Card className="cursor-pointer p-3 transition-shadow hover:shadow-md active:bg-slate-50">
                   <div className="space-y-1">
                     <div className="flex items-center justify-between gap-2 text-xs text-slate-400">
                       <span className="font-medium text-emerald-700">{formatDate(action.action_date)}</span>
@@ -72,8 +72,8 @@ export default async function ProjectsPage() {
       ) : (
         <div className="space-y-2">
           {list.map((p) => (
-            <Link key={p.id} href={`/projekty/${p.id}`}>
-              <Card className="p-4 transition-shadow hover:shadow-md">
+            <Link key={p.id} href={`/projekty/${p.id}`} className="block">
+              <Card className="cursor-pointer p-4 transition-shadow hover:shadow-md active:bg-slate-50">
                 <div className="flex items-center justify-between">
                   <div className="min-w-0">
                     <p className="font-semibold text-slate-900">{p.name}</p>
