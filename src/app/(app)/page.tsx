@@ -68,8 +68,8 @@ export default async function DashboardPage() {
         ) : (
           <div className="space-y-2">
             {projects.map((p) => (
-              <Link key={p.id} href={`/projekty/${p.id}`}>
-                <Card className="flex items-center justify-between p-4 transition-shadow hover:shadow-md">
+              <Link key={p.id} href={`/projekty/${p.id}`} className="block">
+                <Card className="flex cursor-pointer items-center justify-between p-4 transition-shadow hover:shadow-md active:bg-slate-50">
                   <div>
                     <p className="font-semibold text-slate-900">{p.name}</p>
                     {p.description && (
@@ -90,16 +90,18 @@ export default async function DashboardPage() {
           <h2 className="mb-3 text-lg font-semibold text-slate-800">Poslední úkony</h2>
           <div className="space-y-2">
             {recentActions.map((a) => (
-              <Card key={a.id} className="p-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium text-emerald-700">{a.en_projects?.name}</p>
-                    <p className="mt-0.5 text-sm text-slate-700">{a.description}</p>
-                    {a.person && <p className="mt-0.5 text-xs text-slate-500">{a.person}</p>}
+              <Link key={a.id} href={`/projekty/${a.project_id}?tab=actions`} className="block">
+                <Card className="cursor-pointer p-3 transition-shadow hover:shadow-md active:bg-slate-50">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-emerald-700">{a.en_projects?.name}</p>
+                      <p className="mt-0.5 text-sm text-slate-700">{a.description}</p>
+                      {a.person && <p className="mt-0.5 text-xs text-slate-500">{a.person}</p>}
+                    </div>
+                    <span className="shrink-0 text-xs text-slate-400">{formatDate(a.action_date)}</span>
                   </div>
-                  <span className="shrink-0 text-xs text-slate-400">{formatDate(a.action_date)}</span>
-                </div>
-              </Card>
+                </Card>
+              </Link>
             ))}
           </div>
         </section>
