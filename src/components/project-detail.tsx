@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Download, FileText, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
+import { Download, Eye, FileImage, FileText, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import { useSupabase } from "@/hooks/use-supabase";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -267,39 +267,163 @@ function FilesTab({
   supabase: any; refresh: () => void;
 }) {
   const [uploading, setUploading] = useState(false);
+  const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
+
+  function resolveStoragePath(fileUrl: string) {
+    if (!fileUrl) return "";
+
+    if (!fileUrl.startsWith("http")) {
+      return fileUrl;
+    }
+
+    const [, pathWithQuery = ""] = fileUrl.split(`${BUCKET_ATTACHMENTS}/`);
+    return decodeURIComponent(pathWithQuery.split("?")[0] || "");
+  }
+
+  function isImageAttachment(fileName: string, fileType?: string | null) {
+    const lowerName = fileName.toLowerCase();
+    const lowerType = (fileType || "").toLowerCase();
+    return ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"].includes(lowerType)
+      || /\.(jpg|jpeg|png|gif|webp)$/.test(lowerName);
+  }
+
+  function formatFileSize(bytes?: number | null) {
+    if (!bytes || Number.isNaN(bytes)) return null;
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  function getFileVisual(fileName: string, fileType?: string | null) {
+    const lowerName = fileName.toLowerCase();
+    const lowerType = (fileType || "").toLowerCase();
+
+    if (isImageAttachment(fileName, fileType)) {
+      return { Icon: FileImage, color: "text-blue-600" };
+    }
+
+    if (lowerType.includes("pdf") || lowerName.endsWith(".pdf")) {
+      return { Icon: FileText, color: "text-red-600" };
+    }
+
+    if (
+      lowerType.includes("word")
+      || /\.(doc|docx|odt|rtf)$/.test(lowerName)
+    ) {
+      return { Icon: FileText, color: "text-purple-600" };
+    }
+
+    if (
+      lowerType.includes("sheet")
+      || /\.(xls|xlsx|csv|ods)$/.test(lowerName)
+    ) {
+      return { Icon: FileText, color: "text-emerald-600" };
+    }
+
+    return { Icon: FileText, color: "text-slate-500" };
+  }
+
+  async function getSignedUrl(path: string, options?: { width?: number; height?: number }) {
+    const { data, error } = await supabase.storage.from(BUCKET_ATTACHMENTS).createSignedUrl(path, 3600, options
+      ? { transform: { width: options.width, height: options.height } }
+      : undefined);
+
+    if (error || !data?.signedUrl) return null;
+    return data.signedUrl;
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadThumbnails() {
+      const imageAttachments = attachments.filter((a) => isImageAttachment(a.file_name, a.file_type));
+      if (imageAttachments.length === 0) {
+        setThumbnailUrls({});
+        return;
+      }
+
+      const thumbEntries = await Promise.all(
+        imageAttachments.map(async (a) => {
+          const path = resolveStoragePath(a.file_url);
+          if (!path) return null;
+
+          const signedUrl = await getSignedUrl(path, { width: 80, height: 80 });
+          if (!signedUrl) return null;
+
+          return [a.id, signedUrl] as const;
+        }),
+      );
+
+      if (cancelled) return;
+
+      const nextThumbs: Record<string, string> = {};
+      for (const entry of thumbEntries) {
+        if (!entry) continue;
+        nextThumbs[entry[0]] = entry[1];
+      }
+      setThumbnailUrls(nextThumbs);
+    }
+
+    loadThumbnails();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [attachments]);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     setUploading(true);
 
-    for (const file of Array.from(files)) {
-      const path = `${projectId}/${Date.now()}_${file.name}`;
-      const { error: uploadError } = await supabase.storage.from(BUCKET_ATTACHMENTS).upload(path, file);
-      if (uploadError) continue;
+    try {
+      for (const [index, file] of Array.from(files).entries()) {
+        const path = `${projectId}/${Date.now()}_${index}_${file.name}`;
+        const { error: uploadError } = await supabase.storage.from(BUCKET_ATTACHMENTS).upload(path, file);
+        if (uploadError) continue;
 
-      const { data: urlData } = supabase.storage.from(BUCKET_ATTACHMENTS).getPublicUrl(path);
-
-      await supabase.from(T.project_attachments).insert({
-        project_id: projectId,
-        file_name: file.name,
-        file_url: urlData.publicUrl,
-        file_type: file.type || null,
-        uploaded_by: userId,
-      });
+        await supabase.from(T.project_attachments).insert({
+          project_id: projectId,
+          file_name: file.name,
+          file_url: path,
+          file_type: file.type || null,
+          file_size: file.size || null,
+          uploaded_by: userId,
+        });
+      }
+    } finally {
+      setUploading(false);
+      refresh();
+      e.target.value = "";
     }
+  }
 
-    setUploading(false);
-    refresh();
-    e.target.value = "";
+  async function openAttachment(att: ProjectAttachment) {
+    const path = resolveStoragePath(att.file_url);
+    if (!path) return;
+
+    const signedUrl = await getSignedUrl(path);
+    if (!signedUrl) return;
+
+    window.open(signedUrl, "_blank", "noopener,noreferrer");
+  }
+
+  async function downloadAttachment(att: ProjectAttachment) {
+    const path = resolveStoragePath(att.file_url);
+    if (!path) return;
+
+    const signedUrl = await getSignedUrl(path);
+    if (!signedUrl) return;
+
+    window.open(signedUrl, "_blank", "noopener,noreferrer");
   }
 
   async function deleteAttachment(att: ProjectAttachment) {
-    // Extract storage path from URL
-    const urlParts = att.file_url.split(`${BUCKET_ATTACHMENTS}/`);
-    if (urlParts[1]) {
-      await supabase.storage.from(BUCKET_ATTACHMENTS).remove([urlParts[1]]);
+    const path = resolveStoragePath(att.file_url);
+    if (path) {
+      await supabase.storage.from(BUCKET_ATTACHMENTS).remove([path]);
     }
+
     await supabase.from(T.project_attachments).delete().eq("id", att.id);
     refresh();
   }
@@ -309,25 +433,61 @@ function FilesTab({
       {attachments.length === 0 && (
         <Card className="p-6 text-center text-sm text-slate-500">Žádné přílohy.</Card>
       )}
-      {attachments.map((a) => (
-        <Card key={a.id} className="flex items-center justify-between p-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <FileText className="h-4 w-4 shrink-0 text-blue-600" />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-slate-800">{a.file_name}</p>
-              <p className="text-xs text-slate-400">{formatDate(a.created_at)}</p>
+
+      {attachments.map((a) => {
+        const { Icon, color } = getFileVisual(a.file_name, a.file_type);
+        const fileSize = formatFileSize((a as ProjectAttachment & { file_size?: number | null }).file_size);
+        const isImage = isImageAttachment(a.file_name, a.file_type);
+
+        return (
+          <Card key={a.id} className="flex items-center justify-between gap-3 p-3">
+            <div className="flex min-w-0 items-center gap-3">
+              {isImage && thumbnailUrls[a.id] ? (
+                <img
+                  src={thumbnailUrls[a.id]}
+                  alt={a.file_name}
+                  className="h-10 w-10 shrink-0 rounded-md border border-slate-200 object-cover"
+                />
+              ) : (
+                <Icon className={`h-5 w-5 shrink-0 ${color}`} />
+              )}
+
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-slate-800">{a.file_name}</p>
+                <div className="flex flex-wrap items-center gap-x-2 text-xs text-slate-400">
+                  <span>{formatDate(a.created_at)}</span>
+                  {fileSize && <span>· {fileSize}</span>}
+                  {a.category && <span>· Kategorie: {a.category}</span>}
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <a href={a.file_url} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-600">
-              <Download className="h-4 w-4" />
-            </a>
-            <button onClick={() => deleteAttachment(a)} className="text-slate-400 hover:text-red-500">
-              <Trash2 className="h-4 w-4" />
-            </button>
-          </div>
-        </Card>
-      ))}
+
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                onClick={() => openAttachment(a)}
+                className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-blue-600"
+                title="Zobrazit"
+              >
+                <Eye className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => downloadAttachment(a)}
+                className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-blue-600"
+                title="Stáhnout"
+              >
+                <Download className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => deleteAttachment(a)}
+                className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-red-500"
+                title="Smazat"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          </Card>
+        );
+      })}
 
       <label className="block">
         <Button variant="secondary" className="w-full" disabled={uploading} asChild>
