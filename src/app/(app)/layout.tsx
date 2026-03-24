@@ -2,6 +2,7 @@ import { requireUser, getCurrentProfile } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { AppShell } from "@/components/app-shell";
 import { AuthProvider } from "@/components/auth-provider";
+import { T } from "@/lib/tables";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const todayStr = new Date().toISOString().slice(0, 10);
 
   const { count } = await supabase
-    .from("tasks")
+    .from(T.tasks)
     .select("id", { count: "exact", head: true })
     .eq("status", "todo")
     .lte("reminder_date", todayStr)

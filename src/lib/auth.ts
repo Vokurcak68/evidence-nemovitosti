@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import type { UserProfile } from "@/lib/types";
+import { T } from "@/lib/tables";
 
 export async function requireUser() {
   const supabase = await createSupabaseServerClient();
@@ -20,7 +21,7 @@ export async function getCurrentProfile() {
   const supabase = await createSupabaseServerClient();
 
   const { data, error } = await supabase
-    .from("user_profiles")
+    .from(T.user_profiles)
     .select("*")
     .eq("id", user.id)
     .single<UserProfile>();

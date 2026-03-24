@@ -8,6 +8,7 @@ import { requireUser } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { formatDate } from "@/lib/utils";
 import type { Plot, Task } from "@/lib/types";
+import { T } from "@/lib/tables";
 
 type TaskPreview = Pick<Task, "id" | "title" | "plot_id" | "status" | "deadline" | "created_at">;
 
@@ -22,13 +23,13 @@ export default async function DashboardPage() {
   const in7Str = in7.toISOString().slice(0, 10);
 
   const [{ count: plotsCount }, { count: todoCount }, { count: doneCount }] = await Promise.all([
-    supabase.from("plots").select("id", { count: "exact", head: true }),
-    supabase.from("tasks").select("id", { count: "exact", head: true }).eq("status", "todo"),
-    supabase.from("tasks").select("id", { count: "exact", head: true }).eq("status", "done"),
+    supabase.from(T.plots).select("id", { count: "exact", head: true }),
+    supabase.from(T.tasks).select("id", { count: "exact", head: true }).eq("status", "todo"),
+    supabase.from(T.tasks).select("id", { count: "exact", head: true }).eq("status", "done"),
   ]);
 
   const { data: upcomingTasks } = await supabase
-    .from("tasks")
+    .from(T.tasks)
     .select("id,title,plot_id,status,deadline,created_at")
     .eq("status", "todo")
     .gte("deadline", todayStr)
@@ -37,7 +38,7 @@ export default async function DashboardPage() {
     .limit(8);
 
   const { data: recentTasks } = await supabase
-    .from("tasks")
+    .from(T.tasks)
     .select("id,title,plot_id,status,deadline,created_at")
     .order("created_at", { ascending: false })
     .limit(5);
@@ -47,7 +48,7 @@ export default async function DashboardPage() {
 
   let plotsById = new Map<string, string>();
   if (plotIds.length > 0) {
-    const { data: plots } = await supabase.from("plots").select("id,name").in("id", plotIds);
+    const { data: plots } = await supabase.from(T.plots).select("id,name").in("id", plotIds);
     plotsById = new Map(((plots as Pick<Plot, "id" | "name">[] | null) ?? []).map((plot) => [plot.id, plot.name]));
   }
 

@@ -3,13 +3,14 @@ import { Card } from "@/components/ui/card";
 import { requireAdmin } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import type { UserProfile, UserRole } from "@/lib/types";
+import { T } from "@/lib/tables";
 
 export const dynamic = "force-dynamic";
 
 async function getUsers() {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
-    .from("user_profiles")
+    .from(T.user_profiles)
     .select("*")
     .order("created_at", { ascending: false });
 
@@ -42,7 +43,7 @@ export default async function AdminUsersPage() {
       throw new Error(error?.message ?? "Invite selhalo.");
     }
 
-    await admin.from("user_profiles").upsert(
+    await admin.from(T.user_profiles).upsert(
       { id: data.user.id, full_name, email, role },
       { onConflict: "id" },
     );
@@ -60,7 +61,7 @@ export default async function AdminUsersPage() {
     const admin = createSupabaseAdminClient();
 
     await admin.auth.admin.deleteUser(userId);
-    await admin.from("user_profiles").delete().eq("id", userId);
+    await admin.from(T.user_profiles).delete().eq("id", userId);
 
     revalidatePath("/admin/uzivatele");
   }
@@ -74,7 +75,7 @@ export default async function AdminUsersPage() {
     const role = String(formData.get("role") ?? "user") as UserRole;
 
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.from("user_profiles").update({ role }).eq("id", userId);
+    const { error } = await supabase.from(T.user_profiles).update({ role }).eq("id", userId);
 
     if (error) throw new Error("Nepodařilo se změnit roli.");
 

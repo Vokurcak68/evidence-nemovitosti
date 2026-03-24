@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { TaskStatusBadge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import type { PlotPhoto, Task, UserProfile } from "@/lib/types";
+import { T, BUCKET_PLOT_PHOTOS } from "@/lib/tables";
 
 type TaskFormState = {
   id: string | null;
@@ -64,14 +65,14 @@ export function PlotDetailClient({
     try {
       const filePath = `${plotId}/${Date.now()}-${selectedFile.name.replaceAll(" ", "-")}`;
       const { error: uploadError } = await supabase.storage
-        .from("plot-photos")
+        .from(BUCKET_PLOT_PHOTOS)
         .upload(filePath, selectedFile, { upsert: false });
 
       if (uploadError) throw uploadError;
 
-      const { data: publicData } = supabase.storage.from("plot-photos").getPublicUrl(filePath);
+      const { data: publicData } = supabase.storage.from(BUCKET_PLOT_PHOTOS).getPublicUrl(filePath);
       const { data, error: insertError } = await supabase
-        .from("plot_photos")
+        .from(T.plot_photos)
         .insert({
           plot_id: plotId,
           url: publicData.publicUrl,
@@ -95,7 +96,7 @@ export function PlotDetailClient({
 
   async function handleDeletePhoto(photoId: string) {
     setError(null);
-    const { error: deleteError } = await supabase.from("plot_photos").delete().eq("id", photoId);
+    const { error: deleteError } = await supabase.from(T.plot_photos).delete().eq("id", photoId);
     if (deleteError) {
       setError("Fotku se nepodařilo smazat.");
       return;
@@ -137,7 +138,7 @@ export function PlotDetailClient({
     try {
       if (taskForm.id) {
         const { data, error: updateError } = await supabase
-          .from("tasks")
+          .from(T.tasks)
           .update(payload)
           .eq("id", taskForm.id)
           .select("*")
@@ -148,7 +149,7 @@ export function PlotDetailClient({
         setTasks((prev) => prev.map((task) => (task.id === data.id ? data : task)));
       } else {
         const { data, error: insertError } = await supabase
-          .from("tasks")
+          .from(T.tasks)
           .insert({
             ...payload,
             plot_id: plotId,
@@ -177,7 +178,7 @@ export function PlotDetailClient({
   async function toggleTaskStatus(task: Task) {
     const done = task.status === "todo";
     const { data, error: updateError } = await supabase
-      .from("tasks")
+      .from(T.tasks)
       .update({
         status: done ? "done" : "todo",
         completed_at: done ? new Date().toISOString() : null,
@@ -197,7 +198,7 @@ export function PlotDetailClient({
 
   async function deleteTask(taskId: string) {
     setError(null);
-    const { error: deleteError } = await supabase.from("tasks").delete().eq("id", taskId);
+    const { error: deleteError } = await supabase.from(T.tasks).delete().eq("id", taskId);
     if (deleteError) {
       setError("Úkol se nepodařilo smazat.");
       return;

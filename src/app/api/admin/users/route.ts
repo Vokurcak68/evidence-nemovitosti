@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentProfile } from "@/lib/auth";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
+import { T } from "@/lib/tables";
 
 export const runtime = "nodejs";
 
@@ -11,7 +12,7 @@ export async function GET() {
   }
 
   const admin = createSupabaseAdminClient();
-  const { data, error } = await admin.from("user_profiles").select("*").order("created_at", { ascending: false });
+  const { data, error } = await admin.from(T.user_profiles).select("*").order("created_at", { ascending: false });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

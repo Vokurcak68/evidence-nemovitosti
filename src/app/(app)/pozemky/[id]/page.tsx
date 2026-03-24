@@ -10,6 +10,7 @@ import { requireUser, getCurrentProfile } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { formatArea } from "@/lib/utils";
 import type { Plot, PlotPhoto, Task, UserProfile } from "@/lib/types";
+import { T } from "@/lib/tables";
 
 async function deletePlotAction(formData: FormData) {
   "use server";
@@ -19,7 +20,7 @@ async function deletePlotAction(formData: FormData) {
   const supabase = await createSupabaseServerClient();
   const id = String(formData.get("id") ?? "");
 
-  const { data: plot } = await supabase.from("plots").select("created_by").eq("id", id).maybeSingle<{ created_by: string | null }>();
+  const { data: plot } = await supabase.from(T.plots).select("created_by").eq("id", id).maybeSingle<{ created_by: string | null }>();
 
   if (!plot) {
     throw new Error("Pozemek neexistuje.");
@@ -29,7 +30,7 @@ async function deletePlotAction(formData: FormData) {
     throw new Error("Na smazání nemáš oprávnění.");
   }
 
-  const { error } = await supabase.from("plots").delete().eq("id", id);
+  const { error } = await supabase.from(T.plots).delete().eq("id", id);
   if (error) {
     throw new Error("Nepodařilo se smazat pozemek.");
   }
@@ -43,19 +44,19 @@ export default async function PlotDetailPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
 
-  const { data: plot } = await supabase.from("plots").select("*").eq("id", id).maybeSingle<Plot>();
+  const { data: plot } = await supabase.from(T.plots).select("*").eq("id", id).maybeSingle<Plot>();
   if (!plot) {
     redirect("/pozemky");
   }
 
   const [{ data: photos }, { data: tasks }, { data: users }] = await Promise.all([
     supabase
-      .from("plot_photos")
+      .from(T.plot_photos)
       .select("id,plot_id,url,caption,uploaded_by,created_at")
       .eq("plot_id", id)
       .order("created_at", { ascending: false }),
-    supabase.from("tasks").select("*").eq("plot_id", id).order("created_at", { ascending: false }),
-    supabase.from("user_profiles").select("*").order("full_name", { ascending: true }),
+    supabase.from(T.tasks).select("*").eq("plot_id", id).order("created_at", { ascending: false }),
+    supabase.from(T.user_profiles).select("*").order("full_name", { ascending: true }),
   ]);
 
   const canDelete = profile.role === "admin" || plot.created_by === user.id;

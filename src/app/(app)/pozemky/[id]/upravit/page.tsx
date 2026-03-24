@@ -8,6 +8,7 @@ import { requireUser } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { toNullableNumber } from "@/lib/utils";
 import type { Plot } from "@/lib/types";
+import { T } from "@/lib/tables";
 
 async function updatePlot(id: string, formData: FormData) {
   "use server";
@@ -16,7 +17,7 @@ async function updatePlot(id: string, formData: FormData) {
   const supabase = await createSupabaseServerClient();
 
   const { error } = await supabase
-    .from("plots")
+    .from(T.plots)
     .update({
       name: String(formData.get("name") ?? "").trim(),
       address: (formData.get("address") as string) || null,
@@ -42,7 +43,7 @@ export default async function UpravitPozemekPage({ params }: { params: Promise<{
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
 
-  const { data: plot } = await supabase.from("plots").select("*").eq("id", id).maybeSingle<Plot>();
+  const { data: plot } = await supabase.from(T.plots).select("*").eq("id", id).maybeSingle<Plot>();
 
   if (!plot) {
     redirect("/pozemky");

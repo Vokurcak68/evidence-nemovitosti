@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
+import { T } from "@/lib/tables";
 
 export const runtime = "nodejs";
 
@@ -8,7 +9,7 @@ export async function GET() {
   const today = new Date().toISOString().slice(0, 10);
 
   const { data: tasks, error } = await supabase
-    .from("tasks")
+    .from(T.tasks)
     .select("id,title,assigned_to,reminder_date,reminder_sent")
     .eq("status", "todo")
     .eq("reminder_sent", false)
@@ -29,7 +30,7 @@ export async function GET() {
     });
 
     const { error: updateError } = await supabase
-      .from("tasks")
+      .from(T.tasks)
       .update({ reminder_sent: true, updated_at: new Date().toISOString() })
       .eq("id", task.id);
 

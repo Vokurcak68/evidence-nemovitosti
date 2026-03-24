@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { formatDate } from "@/lib/utils";
 import type { Task, UserProfile } from "@/lib/types";
+import { T } from "@/lib/tables";
 
 type TaskRow = Task & { plotName: string };
 
@@ -51,7 +52,7 @@ export function TasksList({
   async function toggleStatus(task: TaskRow) {
     const nextStatus = task.status === "todo" ? "done" : "todo";
     const { data, error } = await supabase
-      .from("tasks")
+      .from(T.tasks)
       .update({
         status: nextStatus,
         completed_at: nextStatus === "done" ? new Date().toISOString() : null,

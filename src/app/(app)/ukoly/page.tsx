@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { Card } from "@/components/ui/card";
 import type { Task } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
+import { T } from "@/lib/tables";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +27,8 @@ async function getTasks(filters: {
   const supabase = await createSupabaseServerClient();
 
   let query = supabase
-    .from("tasks")
-    .select("id, plot_id, title, status, deadline, assigned_to, created_at, plots(name)")
+    .from(T.tasks)
+    .select("id, plot_id, title, status, deadline, assigned_to, created_at, en_plots(name)")
     .order("created_at", { ascending: false });
 
   if (filters.status) query = query.eq("status", filters.status);
@@ -45,7 +46,7 @@ async function getTasks(filters: {
     deadline: row.deadline,
     assigned_to: row.assigned_to,
     created_at: row.created_at,
-    plot_name: row.plots?.name ?? null,
+    plot_name: row.en_plots?.name ?? null,
   }));
 
   return mapped;
@@ -54,7 +55,7 @@ async function getTasks(filters: {
 async function getUsers() {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
-    .from("user_profiles")
+    .from(T.user_profiles)
     .select("id, full_name, email")
     .order("full_name", { ascending: true });
 

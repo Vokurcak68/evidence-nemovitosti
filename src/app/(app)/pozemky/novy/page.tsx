@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { requireUser } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { toNullableNumber } from "@/lib/utils";
+import { T } from "@/lib/tables";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ async function createPlot(formData: FormData) {
   const supabase = await createSupabaseServerClient();
 
   const { data, error } = await supabase
-    .from("plots")
+    .from(T.plots)
     .insert({
       name: String(formData.get("name") ?? "").trim(),
       address: (formData.get("address") as string) || null,

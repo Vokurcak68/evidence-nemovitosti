@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { UserProfile } from "@/lib/types";
 import { useSupabase } from "@/hooks/use-supabase";
+import { T } from "@/lib/tables";
 
 type AuthContextValue = {
   profile: UserProfile | null;
@@ -29,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const { data } = await supabase.from("user_profiles").select("*").eq("id", user.id).maybeSingle<UserProfile>();
+    const { data } = await supabase.from(T.user_profiles).select("*").eq("id", user.id).maybeSingle<UserProfile>();
     setProfile(data ?? null);
     setLoading(false);
   }, [supabase]);

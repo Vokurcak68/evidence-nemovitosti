@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 import { getCurrentProfile } from "@/lib/auth";
 import type { UserRole } from "@/lib/types";
+import { T } from "@/lib/tables";
 
 export const runtime = "nodejs";
 
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: createError?.message ?? "Nepodařilo se vytvořit uživatele." }, { status: 500 });
   }
 
-  const { error: profileError } = await admin.from("user_profiles").insert({
+  const { error: profileError } = await admin.from(T.user_profiles).insert({
     id: created.user.id,
     full_name,
     email,
