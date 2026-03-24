@@ -22,11 +22,14 @@ export default async function AdminUsersPage() {
     const name = formData.get("name") as string;
     if (!email || !name) return;
 
+    const password = formData.get("password") as string;
+    if (!password || password.length < 6) return;
+
     const admin = createSupabaseAdminClient();
     const { data: authData, error: authError } = await admin.auth.admin.createUser({
       email,
       email_confirm: true,
-      password: Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2),
+      password,
     });
 
     if (authError || !authData.user) return;
@@ -72,7 +75,8 @@ export default async function AdminUsersPage() {
             <Input name="name" required placeholder="Jméno" />
             <Input name="email" type="email" required placeholder="Email" />
           </div>
-          <Button type="submit" className="w-full">Pozvat</Button>
+          <Input name="password" type="text" required minLength={6} placeholder="Heslo (min. 6 znaků)" />
+          <Button type="submit" className="w-full">Vytvořit účet</Button>
         </form>
       </Card>
 
