@@ -16,3 +16,4 @@ out
 
 # supabase
 supabase/.temp
+.npmrc
