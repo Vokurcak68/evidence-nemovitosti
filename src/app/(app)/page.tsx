@@ -18,6 +18,7 @@ export default async function DashboardPage() {
       .from(T.project_actions)
       .select("*, en_projects(name)")
       .order("action_date", { ascending: false })
+      .order("created_at", { ascending: false })
       .limit(10),
   ]);
 
