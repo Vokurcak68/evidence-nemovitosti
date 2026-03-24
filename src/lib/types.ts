@@ -50,6 +50,7 @@ export type ProjectAttachment = {
   file_name: string;
   file_url: string;
   file_type: string | null;
+  file_size: number | null;
   category: string | null;
   uploaded_by: string | null;
   created_at: string;

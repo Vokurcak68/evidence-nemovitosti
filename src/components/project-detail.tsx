@@ -436,7 +436,7 @@ function FilesTab({
 
       {attachments.map((a) => {
         const { Icon, color } = getFileVisual(a.file_name, a.file_type);
-        const fileSize = formatFileSize((a as ProjectAttachment & { file_size?: number | null }).file_size);
+        const fileSize = formatFileSize(a.file_size);
         const isImage = isImageAttachment(a.file_name, a.file_type);
 
         return (
@@ -489,13 +489,11 @@ function FilesTab({
         );
       })}
 
-      <label className="block">
-        <Button variant="secondary" className="w-full" disabled={uploading} asChild>
-          <span>
-            <Plus className="mr-1.5 h-4 w-4" />
-            {uploading ? "Nahrávám…" : "Nahrát přílohu"}
-          </span>
-        </Button>
+      <label className="block cursor-pointer">
+        <span className="inline-flex w-full items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-semibold text-emerald-800 shadow-sm ring-1 ring-emerald-200 transition hover:bg-emerald-50">
+          <Plus className="mr-1.5 h-4 w-4" />
+          {uploading ? "Nahrávám…" : "Nahrát přílohu"}
+        </span>
         <input type="file" multiple className="hidden" onChange={handleUpload} disabled={uploading} />
       </label>
     </div>
