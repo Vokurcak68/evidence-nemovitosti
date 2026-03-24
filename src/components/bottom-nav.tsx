@@ -2,67 +2,53 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ListChecks, MapPinned, Shield } from "lucide-react";
+import { FolderOpen, Home, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type BottomNavProps = {
   isAdmin: boolean;
-  remindersCount: number;
 };
 
 const items = [
   { href: "/", label: "Přehled", icon: Home },
-  { href: "/pozemky", label: "Pozemky", icon: MapPinned },
-  { href: "/ukoly", label: "Úkoly", icon: ListChecks },
+  { href: "/projekty", label: "Projekty", icon: FolderOpen },
 ] as const;
 
-export function BottomNav({ isAdmin, remindersCount }: BottomNavProps) {
+export function BottomNav({ isAdmin }: BottomNavProps) {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-emerald-100 bg-white/95 pb-safe backdrop-blur md:hidden">
-      <ul className="mx-auto grid max-w-xl grid-cols-4">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-sm safe-bottom">
+      <div className="mx-auto flex max-w-lg items-center justify-around">
         {items.map((item) => {
-          const Icon = item.icon;
-          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           return (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className={cn(
-                  "relative flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-medium transition",
-                  active ? "text-emerald-700" : "text-slate-500",
-                )}
-              >
-                <Icon size={18} />
-                <span>{item.label}</span>
-                {item.href === "/ukoly" && remindersCount > 0 ? (
-                  <span className="absolute right-5 top-2 rounded-full bg-emerald-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
-                    {remindersCount}
-                  </span>
-                ) : null}
-              </Link>
-            </li>
-          );
-        })}
-
-        {isAdmin ? (
-          <li>
             <Link
-              href="/admin/uzivatele"
+              key={item.href}
+              href={item.href}
               className={cn(
-                "flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-medium transition",
-                pathname.startsWith("/admin") ? "text-emerald-700" : "text-slate-500",
+                "flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-colors",
+                active ? "text-emerald-700" : "text-slate-400 hover:text-slate-600",
               )}
             >
-              <Shield size={18} />
-              <span>Admin</span>
+              <item.icon className={cn("h-5 w-5", active && "text-emerald-600")} />
+              {item.label}
             </Link>
-          </li>
-        ) : (
-          <li className="min-h-16" />
+          );
+        })}
+        {isAdmin && (
+          <Link
+            href="/admin/uzivatele"
+            className={cn(
+              "flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-colors",
+              pathname.startsWith("/admin") ? "text-emerald-700" : "text-slate-400 hover:text-slate-600",
+            )}
+          >
+            <Shield className={cn("h-5 w-5", pathname.startsWith("/admin") && "text-emerald-600")} />
+            Admin
+          </Link>
         )}
-      </ul>
+      </div>
     </nav>
   );
 }

@@ -4,10 +4,11 @@
  */
 export const T = {
   user_profiles: "en_user_profiles",
-  plots: "en_plots",
-  plot_photos: "en_plot_photos",
-  tasks: "en_tasks",
+  projects: "en_projects",
+  project_plots: "en_project_plots",
+  project_actions: "en_project_actions",
+  project_attachments: "en_project_attachments",
 } as const;
 
 /** Storage bucket name */
-export const BUCKET_PLOT_PHOTOS = "en-plot-photos";
+export const BUCKET_ATTACHMENTS = "en-attachments";

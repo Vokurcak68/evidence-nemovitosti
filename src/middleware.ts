@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase-middleware";
 
-const PUBLIC_ROUTES = ["/login", "/api/debug"];
+const PUBLIC_ROUTES = ["/login"];
 
 export async function middleware(request: NextRequest) {
   const response = await updateSession(request);

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ListChecks, MapPinned, Shield } from "lucide-react";
+import { FolderOpen, Home, Shield } from "lucide-react";
 import { BottomNav } from "@/components/bottom-nav";
 import { SignOutButton } from "@/components/signout-button";
 import { useAuth } from "@/components/auth-provider";
@@ -11,19 +11,16 @@ import { cn } from "@/lib/utils";
 export function AppShell({
   children,
   isAdmin,
-  remindersCount,
 }: Readonly<{
   children: React.ReactNode;
   isAdmin: boolean;
-  remindersCount: number;
 }>) {
   const pathname = usePathname();
   const { profile } = useAuth();
 
   const navItems = [
     { href: "/", label: "Přehled", icon: Home },
-    { href: "/pozemky", label: "Pozemky", icon: MapPinned },
-    { href: "/ukoly", label: "Úkoly", icon: ListChecks, badge: remindersCount },
+    { href: "/projekty", label: "Projekty", icon: FolderOpen },
   ];
 
   if (isAdmin) {
@@ -72,17 +69,12 @@ export function AppShell({
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex min-h-11 items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold transition",
+                    "flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition",
                     active ? "bg-emerald-600 text-white" : "text-slate-700 hover:bg-emerald-50",
                   )}
                 >
-                  <span className="flex items-center gap-2">
-                    <Icon size={17} />
-                    {item.label}
-                  </span>
-                  {item.badge && item.badge > 0 ? (
-                    <span className={cn("rounded-full px-2 py-0.5 text-xs", active ? "bg-white/20" : "bg-emerald-100")}>{item.badge}</span>
-                  ) : null}
+                  <Icon size={17} />
+                  {item.label}
                 </Link>
               );
             })}
@@ -92,7 +84,7 @@ export function AppShell({
         <main className="w-full min-w-0 pb-20 md:pb-8">{children}</main>
       </div>
 
-      <BottomNav isAdmin={isAdmin} remindersCount={remindersCount} />
+      <BottomNav isAdmin={isAdmin} />
     </div>
   );
 }

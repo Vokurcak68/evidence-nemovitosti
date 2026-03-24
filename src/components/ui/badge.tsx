@@ -1,28 +1,22 @@
 import { cn } from "@/lib/utils";
-import type { TaskStatus } from "@/lib/types";
 
-export function TaskStatusBadge({ status }: { status: TaskStatus }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex rounded-full px-2.5 py-1 text-xs font-semibold",
-        status === "done" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800",
-      )}
-    >
-      {status === "done" ? "Vyřešeno" : "K řešení"}
-    </span>
-  );
-}
+type BadgeProps = {
+  children: React.ReactNode;
+  variant?: "default" | "success" | "warning" | "danger";
+  className?: string;
+};
 
-export function RoleBadge({ role }: { role: "admin" | "user" }) {
+const variants = {
+  default: "bg-slate-100 text-slate-700",
+  success: "bg-emerald-100 text-emerald-800",
+  warning: "bg-amber-100 text-amber-800",
+  danger: "bg-red-100 text-red-800",
+};
+
+export function Badge({ children, variant = "default", className }: BadgeProps) {
   return (
-    <span
-      className={cn(
-        "inline-flex rounded-full px-2.5 py-1 text-xs font-semibold",
-        role === "admin" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-700",
-      )}
-    >
-      {role === "admin" ? "Admin" : "Uživatel"}
+    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold", variants[variant], className)}>
+      {children}
     </span>
   );
 }

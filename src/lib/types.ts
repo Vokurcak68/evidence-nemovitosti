@@ -8,44 +8,51 @@ export type UserProfile = {
   created_at: string;
 };
 
-export type Plot = {
+export type Project = {
   id: string;
   name: string;
-  address: string | null;
-  cadastral_number: string | null;
-  lv_number: string | null;
-  area_m2: number | null;
-  gps_lat: number | null;
-  gps_lng: number | null;
+  description: string | null;
+  current_up_state: string | null;
+  target_up_state: string | null;
+  min_parcel_area: string | null;
+  restrictions: string | null;
+  purchase_price: string | null;
+  purchase_date: string | null;
   notes: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
 };
 
-export type PlotPhoto = {
+export type ProjectPlot = {
   id: string;
-  plot_id: string;
-  url: string;
-  caption: string | null;
+  project_id: string;
+  parcel_number: string;
+  area_m2: number | null;
+  notes: string | null;
+  created_at: string;
+};
+
+export type ProjectAction = {
+  id: string;
+  project_id: string;
+  action_date: string;
+  description: string;
+  person: string | null;
+  contact: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
+export type ProjectAttachment = {
+  id: string;
+  project_id: string;
+  file_name: string;
+  file_url: string;
+  file_type: string | null;
+  category: string | null;
   uploaded_by: string | null;
   created_at: string;
 };
 
-export type TaskStatus = "todo" | "done";
-
-export type Task = {
-  id: string;
-  plot_id: string;
-  title: string;
-  description: string | null;
-  status: TaskStatus;
-  assigned_to: string | null;
-  deadline: string | null;
-  completed_at: string | null;
-  reminder_date: string | null;
-  reminder_sent: boolean;
-  created_by: string | null;
-  created_at: string;
-  updated_at: string;
-};
+export type ActionStatus = "todo" | "done";
