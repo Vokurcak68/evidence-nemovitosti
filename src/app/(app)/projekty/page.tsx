@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Clock, Plus } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -13,7 +13,21 @@ import type { Project } from "@/lib/types";
 export default async function ProjectsPage() {
   const supabase = await createSupabaseServerClient();
   const { data: projects } = await supabase.from(T.projects).select("*").order("name", { ascending: true });
+  const { data: recentActions } = await supabase
+    .from(T.project_actions)
+    .select("*, project:en_projects(id, name)")
+    .order("action_date", { ascending: false })
+    .limit(5);
+
   const list = (projects ?? []) as Project[];
+  const recent = (recentActions ?? []) as Array<{
+    id: string;
+    project_id: string;
+    action_date: string;
+    description: string;
+    person: string | null;
+    project?: { id: string; name: string } | null;
+  }>;
 
   return (
     <div className="space-y-4 p-4 pb-24">
@@ -26,6 +40,32 @@ export default async function ProjectsPage() {
           </Button>
         </Link>
       </div>
+
+      {recent.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5 px-1">
+            <Clock className="h-4 w-4 text-emerald-700" />
+            <h2 className="text-sm font-semibold text-emerald-800">Poslední úkony</h2>
+          </div>
+
+          <div className="space-y-2">
+            {recent.map((action) => (
+              <Link key={action.id} href={`/projekty/${action.project_id}?tab=actions`}>
+                <Card className="p-3 transition-shadow hover:shadow-md">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between gap-2 text-xs text-slate-400">
+                      <span className="font-medium text-emerald-700">{formatDate(action.action_date)}</span>
+                      {action.person && <span className="truncate">{action.person}</span>}
+                    </div>
+                    <p className="line-clamp-1 text-sm text-slate-800">{action.description}</p>
+                    <p className="text-xs text-slate-500">Projekt: {action.project?.name ?? "—"}</p>
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {list.length === 0 ? (
         <EmptyState title="Žádné projekty" description="Vytvořte první projekt." />

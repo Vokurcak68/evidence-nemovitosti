@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Download, Eye, FileImage, FileText, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import { useSupabase } from "@/hooks/use-supabase";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,9 @@ type Props = {
 };
 
 export function ProjectDetail({ project, plots, actions, attachments, users, userId }: Props) {
-  const [tab, setTab] = useState<Tab>("info");
+  const searchParams = useSearchParams();
+  const initialTab = (searchParams.get("tab") as Tab) || "info";
+  const [tab, setTab] = useState<Tab>(initialTab);
   const supabase = useSupabase();
   const router = useRouter();
 
