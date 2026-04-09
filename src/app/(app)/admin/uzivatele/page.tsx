@@ -48,9 +48,29 @@ export default async function AdminUsersPage() {
     "use server";
     const userId = formData.get("userId") as string;
     if (!userId) return;
+
+    const me = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await me.auth.getUser();
+
+    // Safety: don't allow deleting currently logged-in admin from this UI
+    if (user?.id === userId) {
+      redirect("/admin/uzivatele");
+    }
+
     const admin = createSupabaseAdminClient();
-    await admin.from(T.user_profiles).delete().eq("id", userId);
+
+    // Break FK references first (created_by / uploaded_by)
+    await Promise.all([
+      admin.from(T.projects).update({ created_by: null }).eq("created_by", userId),
+      admin.from(T.project_actions).update({ created_by: null }).eq("created_by", userId),
+      admin.from(T.project_attachments).update({ uploaded_by: null }).eq("uploaded_by", userId),
+    ]);
+
+    // Delete auth user only; profile row is linked via ON DELETE CASCADE
     await admin.auth.admin.deleteUser(userId);
+
     redirect("/admin/uzivatele");
   }
 
