@@ -30,7 +30,10 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6 p-4 pb-24">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">Přehled</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900">Přehled</h1>
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">Vývoj</span>
+        </div>
         <Link href="/projekty/novy">
           <Button>
             <Plus className="mr-1.5 h-4 w-4" />
